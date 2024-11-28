@@ -102,7 +102,7 @@ const ChatbotInput: React.FC = () => {
             {formattedResponse}
           </div>
         ) : (
-          <p className="text-gray-400">Votre réponse s'affichera ici...</p>
+          <p className="text-gray-400">Votre réponse s&apos;affichera ici...</p>
         )}
       </div>
 

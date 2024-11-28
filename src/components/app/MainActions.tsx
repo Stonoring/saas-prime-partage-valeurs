@@ -44,7 +44,7 @@ export default function MainActions() {
       </div>
       <Button className="w-full h-10 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white shadow-lg shadow-purple-500/25 transition-all hover:shadow-purple-500/35">
         <Bot className="mr-2 h-5 w-5" />
-        Faire ses démarches avec l'IA
+        Faire ses démarches avec l&apos;IA
       </Button>
     </div>
   );
