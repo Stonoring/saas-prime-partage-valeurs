@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CompagnyInformationsProps {
   companySize?: number;
+  onFiscalYearStartChange?: (fiscalYearStart: string) => void; // Ajout de la prop facultative
 }
 
-const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize = 0 }) => {
+const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize = 0, onFiscalYearStartChange }) => {
   const [siret, setSiret] = useState<string>(""); // Stocker le SIRET saisi par l'utilisateur
   const [companyData, setCompanyData] = useState<any>({
     companySize,
@@ -59,6 +60,11 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
         revenue: responseData.chiffre_affaires || "Non renseigné",
         years: `${responseData.annees_existence || "N/A"} ans`,
       });
+
+      // Passer la date de début d'exercice comptable au parent si la prop est définie
+      if (onFiscalYearStartChange) {
+        onFiscalYearStartChange(responseData.debut_exercice_comptable || "Inconnue");
+      }
     } catch (error) {
       if (error instanceof Error) {
         console.error("Erreur lors de la récupération des données via le webhook :", error.message);
