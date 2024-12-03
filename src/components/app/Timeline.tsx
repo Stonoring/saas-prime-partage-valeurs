@@ -14,7 +14,8 @@ interface TimelineStep {
 const timelineSteps: TimelineStep[] = [
   {
     title: "Composer",
-    description: "Définition des règles et simulation des montants des primes selon les objectifs.",
+    description:
+      "Définition des règles et simulation des montants des primes selon les objectifs.",
     action: "SIMULER",
     icon: <PenLine className="w-6 h-6" />,
     getDate: (startDate: Date) => {
@@ -25,7 +26,8 @@ const timelineSteps: TimelineStep[] = [
   },
   {
     title: "Rédiger",
-    description: "Rédaction automatique des documents nécessaires à la mise en place de l'accord.",
+    description:
+      "Rédaction automatique des documents nécessaires à la mise en place de l'accord.",
     action: "GÉNÉRER LES DOCUMENTS",
     icon: <FileText className="w-6 h-6" />,
     getDate: (startDate: Date) => {
@@ -38,7 +40,8 @@ const timelineSteps: TimelineStep[] = [
   },
   {
     title: "Finaliser",
-    description: "Finalisation de l'accord et dépôt auprès des autorités compétentes pour validation.",
+    description:
+      "Finalisation de l'accord et dépôt auprès des autorités compétentes pour validation.",
     action: "SOUMETTRE",
     icon: <CheckSquare className="w-6 h-6" />,
     getDate: (startDate: Date) => {
@@ -78,10 +81,15 @@ const convertToISO = (dateStr: string): string => {
 const Timeline: React.FC<TimelineProps> = ({ fiscalYearStart }) => {
   const navigate = useNavigate();
 
-  const startDate = fiscalYearStart !== "Inconnue" ? new Date(convertToISO(fiscalYearStart)) : null;
+  const startDate =
+    fiscalYearStart !== "Inconnue" ? new Date(convertToISO(fiscalYearStart)) : null;
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
   const getStepDate = (step: TimelineStep): string => {
@@ -101,21 +109,28 @@ const Timeline: React.FC<TimelineProps> = ({ fiscalYearStart }) => {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full px-4 space-y-6">
       <div className="relative">
-        <div className="absolute top-8 left-8 right-8 h-0.5 bg-gradient-to-r from-purple-500 to-purple-900"></div>
-        <div className="flex justify-between">
+        <div className="absolute top-8 left-4 right-4 md:left-8 md:right-8 h-0.5 bg-gradient-to-r from-purple-500 to-purple-900"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {timelineSteps.map((step, index) => (
-            <div key={index} className="flex flex-col items-center w-48">
-              <div className="z-10 w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md mb-2">
+            <div
+              key={index}
+              className="flex flex-col items-center w-full transition-all duration-300 ease-in-out hover:scale-105"
+            >
+              <div className="z-10 w-12 h-12 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center shadow-md mb-2">
                 {step.icon}
               </div>
-              <div className="text-center">
-                <h3 className="font-semibold mb-1">{step.title}</h3>
-                <p className="text-xs text-gray-600 mb-2 h-12 overflow-y-auto">
+              <div className="text-center px-2">
+                <h3 className="text-sm md:text-base font-semibold mb-1">
+                  {step.title}
+                </h3>
+                <p className="text-xs md:text-sm text-gray-600 mb-2 h-12 overflow-y-auto">
                   {step.description}
                 </p>
-                <p className="text-sm font-medium mb-2">{getStepDate(step)}</p>
+                <p className="text-xs md:text-sm font-medium mb-2">
+                  {getStepDate(step)}
+                </p>
                 <Button
                   onClick={() => handleAction(step.action)}
                   className="w-full text-xs py-1"
