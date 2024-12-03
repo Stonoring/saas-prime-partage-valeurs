@@ -1,34 +1,35 @@
 {
   "compilerOptions": {
-    "target": "ES2017",                    // Gardons la cible ECMAScript moderne
-    "lib": ["dom", "dom.iterable", "esnext"], // Utilisation des bibliothèques nécessaires pour DOM et ESNext
-    "allowJs": true,                       // Permet d'utiliser du JavaScript dans le projet
-    "skipLibCheck": true,                  // Ignore les vérifications des fichiers de bibliothèque
-    "strict": true,                        // Active les règles strictes de TypeScript
-    "noEmit": true,                        // Empêche TypeScript de générer des fichiers JS
-    "esModuleInterop": true,               // Permet l'importation par défaut des modules CommonJS
-    "module": "esnext",                    // Module ESNext pour des fonctionnalités modernes
-    "moduleResolution": "bundler",        // Résolution des modules compatible avec bundlers modernes
-    "resolveJsonModule": true,            // Permet d'importer des fichiers JSON
-    "isolatedModules": true,              // Assure l'isolation des modules
-    "jsx": "preserve",                    // Permet d'utiliser JSX avec React
-    "incremental": true,                  // Active les builds incrémentaux pour accélérer les compilations
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
     "plugins": [
       {
-        "name": "next"                    // Plugin spécifique pour Next.js
+        "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]                  // Alias pour faciliter les imports
+      "@/*": ["./src/*"]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "src/types/**/*"    // Inclusion des types personnalisés
   ],
   "exclude": [
-    "node_modules"                        // Exclut les modules Node
+    "node_modules"
   ]
 }

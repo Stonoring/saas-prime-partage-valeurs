@@ -28,3 +28,4 @@ export interface InfoEntreprise {
     resultats: Record<string, unknown>;
   }
   
+  
