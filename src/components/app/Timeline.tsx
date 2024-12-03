@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { PenLine, FileText, CheckSquare, DollarSign } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface TimelineStep {
   title: string;
@@ -18,7 +19,7 @@ const timelineSteps: TimelineStep[] = [
     icon: <PenLine className="w-6 h-6" />,
     getDate: (startDate: Date) => {
       const composerDate = new Date(startDate);
-      composerDate.setMonth(composerDate.getMonth() + 6); // D0 + 6 mois
+      composerDate.setMonth(composerDate.getMonth() + 6);
       return composerDate;
     },
   },
@@ -29,9 +30,9 @@ const timelineSteps: TimelineStep[] = [
     icon: <FileText className="w-6 h-6" />,
     getDate: (startDate: Date) => {
       const composerDate = new Date(startDate);
-      composerDate.setMonth(composerDate.getMonth() + 6); // D0 + 6 mois
+      composerDate.setMonth(composerDate.getMonth() + 6);
       const rédigerDate = new Date(composerDate);
-      rédigerDate.setDate(rédigerDate.getDate() + 15); // Composer + 15 jours
+      rédigerDate.setDate(rédigerDate.getDate() + 15);
       return rédigerDate;
     },
   },
@@ -42,9 +43,9 @@ const timelineSteps: TimelineStep[] = [
     icon: <CheckSquare className="w-6 h-6" />,
     getDate: (startDate: Date) => {
       const composerDate = new Date(startDate);
-      composerDate.setMonth(composerDate.getMonth() + 6); // D0 + 6 mois
+      composerDate.setMonth(composerDate.getMonth() + 6);
       const finaliserDate = new Date(composerDate);
-      finaliserDate.setMonth(finaliserDate.getMonth() + 10); // Composer + 10 mois
+      finaliserDate.setMonth(finaliserDate.getMonth() + 10);
       return finaliserDate;
     },
   },
@@ -55,9 +56,9 @@ const timelineSteps: TimelineStep[] = [
     icon: <DollarSign className="w-6 h-6" />,
     getDate: (startDate: Date) => {
       const composerDate = new Date(startDate);
-      composerDate.setMonth(composerDate.getMonth() + 6); // D0 + 6 mois
+      composerDate.setMonth(composerDate.getMonth() + 6);
       const verserDate = new Date(composerDate);
-      verserDate.setMonth(verserDate.getMonth() + 12); // Composer + 12 mois
+      verserDate.setMonth(verserDate.getMonth() + 12);
       return verserDate;
     },
   },
@@ -67,7 +68,6 @@ interface TimelineProps {
   fiscalYearStart: string;
 }
 
-// Function to convert "DD/MM/YYYY" to "YYYY-MM-DD"
 const convertToISO = (dateStr: string): string => {
   const parts = dateStr.split("/");
   if (parts.length !== 3) return "Invalid Date";
@@ -76,7 +76,8 @@ const convertToISO = (dateStr: string): string => {
 };
 
 const Timeline: React.FC<TimelineProps> = ({ fiscalYearStart }) => {
-  // Convert fiscalYearStart to a Date object
+  const navigate = useNavigate();
+
   const startDate = fiscalYearStart !== "Inconnue" ? new Date(convertToISO(fiscalYearStart)) : null;
 
   const formatDate = (date: Date): string => {
@@ -87,6 +88,16 @@ const Timeline: React.FC<TimelineProps> = ({ fiscalYearStart }) => {
     if (!startDate) return "Date inconnue";
     const date = step.getDate(startDate);
     return formatDate(date);
+  };
+
+  const handleAction = (action: string) => {
+    if (action === "SIMULER") {
+      navigate("/ppv-simulator");
+    } else if (action === "GÉNÉRER LES DOCUMENTS") {
+      navigate("/redac-documents");
+    } else {
+      console.log(`Action: ${action}`);
+    }
   };
 
   return (
@@ -106,7 +117,7 @@ const Timeline: React.FC<TimelineProps> = ({ fiscalYearStart }) => {
                 </p>
                 <p className="text-sm font-medium mb-2">{getStepDate(step)}</p>
                 <Button
-                  onClick={() => console.log(`Action: ${step.action}`)}
+                  onClick={() => handleAction(step.action)}
                   className="w-full text-xs py-1"
                   variant="outline"
                 >

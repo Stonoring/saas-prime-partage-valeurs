@@ -1,6 +1,17 @@
 import React, { useState } from "react";
-import { Building, UserPlus, CalendarDays, Calendar, Zap, Clock } from "lucide-react";
+import { Building, UserPlus, CalendarDays, Calendar, Zap, Clock, Edit } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Définition du type pour les données de l'entreprise
+interface CompanyData {
+  companySize: number | string;
+  name: string;
+  siret: string;
+  creationDate: string;
+  fiscalYearStart: string;
+  revenue: string;
+  years: string;
+}
 
 interface CompagnyInformationsProps {
   companySize?: number;
@@ -9,7 +20,7 @@ interface CompagnyInformationsProps {
 
 const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize = 0, onFiscalYearStartChange }) => {
   const [siret, setSiret] = useState<string>(""); // Stocker le SIRET saisi par l'utilisateur
-  const [companyData, setCompanyData] = useState<any>({
+  const [companyData, setCompanyData] = useState<CompanyData>({
     companySize,
     name: "Entreprise inconnue",
     siret: "123 456 789 00001",
@@ -19,14 +30,15 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
     years: "N/A",
   });
   const [loading, setLoading] = useState<boolean>(false); // Gérer l'indicateur de chargement
+  const [isEditingRevenue, setIsEditingRevenue] = useState<boolean>(false); // Gérer l'édition du chiffre d'affaires
+  const [isEditingSize, setIsEditingSize] = useState<boolean>(false); // Gérer l'édition des effectifs
+  const [newRevenue, setNewRevenue] = useState<string>(companyData.revenue); // Chiffre d'affaires à modifier
+  const [newSize, setNewSize] = useState<string>(companyData.companySize.toString()); // Effectif à modifier
 
   // Fonction pour récupérer les données via le webhook Make
   const fetchCompanyData = async () => {
-    console.log("Bouton cliqué ! Tentative de récupération des données...");
-    console.log("Valeur du SIRET : ", siret);
     setLoading(true);
     try {
-      console.log("Envoi de la requête au webhook...");
       const response = await fetch("https://hook.eu2.make.com/f6x7e0iil8lffh1fmd9r7fiyf4seedtl", {
         method: "POST",
         headers: {
@@ -35,22 +47,7 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
         body: JSON.stringify({ siren: siret }),
       });
 
-      console.log("Statut HTTP de la réponse : ", response.status);
-
-      // Vérifiez si la réponse est JSON
-      const contentType = response.headers.get("Content-Type");
-      console.log("Type de contenu de la réponse :", contentType);
-
-      if (!contentType || !contentType.includes("application/json")) {
-        const rawResponse = await response.text();
-        console.error("Réponse non JSON reçue :", rawResponse);
-        throw new Error(`Réponse non JSON : ${rawResponse}`);
-      }
-
       const responseData = await response.json();
-      console.log("Réponse JSON reçue :", responseData);
-
-      // Mettre à jour les données dans le composant
       setCompanyData({
         companySize: responseData.effectifs || "N/A",
         name: responseData.nom_entreprise || "Inconnue",
@@ -66,25 +63,89 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
         onFiscalYearStartChange(responseData.debut_exercice_comptable || "Inconnue");
       }
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Erreur lors de la récupération des données via le webhook :", error.message);
-        alert(`Une erreur est survenue : ${error.message}`);
-      } else {
-        console.error("Erreur inconnue :", error);
-        alert("Une erreur inconnue est survenue.");
-      }
+      console.error("Erreur lors de la récupération des données :", error);
+      alert("Une erreur est survenue lors de la récupération des données.");
     } finally {
-      console.log("Requête terminée.");
       setLoading(false);
+    }
+  };
+
+  const handleRevenueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewRevenue(event.target.value);
+  };
+
+  const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewSize(event.target.value);
+  };
+
+  const handleSaveRevenue = () => {
+    setCompanyData((prevData: CompanyData) => ({
+      ...prevData,
+      revenue: newRevenue,
+    }));
+    setIsEditingRevenue(false);
+  };
+
+  const handleSaveSize = () => {
+    setCompanyData((prevData: CompanyData) => ({
+      ...prevData,
+      companySize: parseInt(newSize, 10),
+    }));
+    setIsEditingSize(false);
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      if (isEditingRevenue) {
+        handleSaveRevenue();
+      } else if (isEditingSize) {
+        handleSaveSize();
+      }
     }
   };
 
   const items = [
     { icon: Building, title: "Entreprise", value: `${companyData.name}`, colorClass: "text-blue-500" },
-    { icon: UserPlus, title: "Effectif", value: `${companyData.companySize}`, colorClass: "text-green-500" },
+    {
+      icon: UserPlus,
+      title: "Effectif",
+      value: isEditingSize ? (
+        <input
+          type="number"
+          value={newSize}
+          onChange={handleSizeChange}
+          onKeyDown={handleKeyPress}
+          className="border p-1 rounded"
+        />
+      ) : (
+        <>
+          {companyData.companySize}{" "}
+          <Edit className="cursor-pointer inline" onClick={() => setIsEditingSize(true)} />
+        </>
+      ),
+      colorClass: "text-green-500",
+    },
     { icon: CalendarDays, title: "Date de création", value: companyData.creationDate, colorClass: "text-gray-500" },
     { icon: Calendar, title: "Début exercice comptable", value: companyData.fiscalYearStart, colorClass: "text-black" },
-    { icon: Zap, title: "Chiffre d'affaires", value: companyData.revenue, colorClass: "text-yellow-500" },
+    {
+      icon: Zap,
+      title: "Chiffre d'affaires",
+      value: isEditingRevenue ? (
+        <input
+          type="text"
+          value={newRevenue}
+          onChange={handleRevenueChange}
+          onKeyDown={handleKeyPress}
+          className="border p-1 rounded"
+        />
+      ) : (
+        <>
+          {companyData.revenue}{" "}
+          <Edit className="cursor-pointer inline" onClick={() => setIsEditingRevenue(true)} />
+        </>
+      ),
+      colorClass: "text-yellow-500",
+    },
     { icon: Clock, title: "Années d'existence", value: companyData.years, colorClass: "text-indigo-500" },
   ];
 
@@ -104,11 +165,7 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
           />
           <button
             onClick={fetchCompanyData}
-            className={`mt-2 px-4 py-2 rounded ${
-              loading || !siret
-                ? "bg-gray-400 text-white cursor-not-allowed"
-                : "bg-purple-600 text-white hover:bg-purple-700"
-            }`}
+            className={`mt-2 px-4 py-2 rounded ${loading || !siret ? "bg-gray-400 text-white cursor-not-allowed" : "bg-purple-600 text-white hover:bg-purple-700"}`}
             disabled={loading || !siret} // Désactiver si en cours de chargement ou si SIRET vide
           >
             {loading ? "Chargement..." : "Rechercher"}
