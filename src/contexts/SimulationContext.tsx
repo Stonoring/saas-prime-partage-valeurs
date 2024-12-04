@@ -1,3 +1,4 @@
+// src/contexts/SimulationContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface SimulationData {
@@ -11,6 +12,8 @@ interface SimulationData {
     classification: number;
     workTime: number;
   };
+  selectedNeeds?: { id: string; label: string }[]; // Ajout de selectedNeeds
+  otherNeed?: string; // Ajout de otherNeed
 }
 
 interface SimulationContextType {
@@ -29,6 +32,8 @@ const defaultSimulationData: SimulationData = {
     classification: 33,
     workTime: 34,
   },
+  selectedNeeds: [], // Initialisation de selectedNeeds
+  otherNeed: '', // Initialisation de otherNeed
 };
 
 const SimulationContext = createContext<SimulationContextType | undefined>(undefined);
@@ -45,10 +50,7 @@ export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children
   const [data, setData] = useState<SimulationData>(defaultSimulationData);
 
   const updateData = (newData: Partial<SimulationData>) => {
-    setData((prevData) => {
-      const updatedData = { ...prevData, ...newData };
-      return JSON.stringify(updatedData) !== JSON.stringify(prevData) ? updatedData : prevData;
-    });
+    setData((prevData) => ({ ...prevData, ...newData }));
   };
 
   return (
@@ -57,4 +59,3 @@ export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children
     </SimulationContext.Provider>
   );
 };
-
