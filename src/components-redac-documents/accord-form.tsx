@@ -13,10 +13,9 @@ export default function AccordForm() {
     siret: '',
     idcc: '',
     nombreSalaries: '',
-    periodeApplication: '',
-    dateLimiteVersement: '',
-    lieuDateSignature: '',
-    nomQualiteSignataire: '',
+    exercicesRetenus: '',
+    dateClotureExercice: '',
+    lieu: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,6 +26,12 @@ export default function AccordForm() {
     }));
   };
 
+  const calculateClotureDate = (date: string) => {
+    const initialDate = new Date(date);
+    initialDate.setMonth(initialDate.getMonth() + 5); // Ajoute 5 mois
+    return initialDate.toISOString().split('T')[0]; // Formate en yyyy-mm-dd
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -34,21 +39,28 @@ export default function AccordForm() {
       const response = await fetch('/template-interessement.txt');
       const templateText = await response.text();
 
+      const todayDate = new Date().toLocaleDateString('fr-FR'); // Date du jour (format FR)
+
+      const updatedFormData: Record<string, string> = {
+        ...formData,
+        Date: todayDate,
+      };
+
       let filledTemplate = templateText;
-      for (const key in formData) {
+
+      for (const key in updatedFormData) {
         const placeholder = `{{${key}}}`;
-        const value = formData[key] || 'N/A';
+        const value = updatedFormData[key] || 'N/A';
         filledTemplate = filledTemplate.split(placeholder).join(value);
       }
 
       const doc = new jsPDF();
 
-      // Ajout du titre principal
+      // Ajout du contenu PDF
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(16);
       doc.text("Accord d'intéressement", 105, 15, null, null, "center");
 
-      // Informations générales (texte normal, titres en gras)
       doc.setFontSize(12);
       doc.setFont("Helvetica", "bold");
       doc.text("Informations Générales :", 10, 30);
@@ -58,43 +70,10 @@ export default function AccordForm() {
       doc.text(`SIRET : ${formData.siret}`, 10, 60);
       doc.text(`IDCC : ${formData.idcc}`, 10, 70);
       doc.text(`Nombre de salariés : ${formData.nombreSalaries}`, 10, 80);
-      doc.text(`Période d'application : ${formData.periodeApplication}`, 10, 90);
-      doc.text(`Date limite de versement : ${formData.dateLimiteVersement}`, 10, 100);
-
-      // Découpe et segmentation du texte principal
-      let y = 110; // Position initiale après les informations générales
-      const pageWidth = doc.internal.pageSize.width;
-      const margin = 10;
-      const usableWidth = pageWidth - margin * 2;
-
-      doc.setFontSize(10);
-      const sections = filledTemplate.split("\n\n"); // Segmentation par paragraphes
-      sections.forEach((section, index) => {
-        if (index === 0) {
-          doc.setFont("Helvetica", "bold");
-        } else {
-          doc.setFont("Helvetica", "normal");
-        }
-
-        const lines = doc.splitTextToSize(section, usableWidth);
-        lines.forEach((line: string) => {
-          if (y + 10 > doc.internal.pageSize.height - 20) {
-            doc.addPage();
-            y = 20;
-          }
-          doc.text(line, margin, y);
-          y += 8;
-        });
-        y += 5; // Espacement entre paragraphes
-      });
-
-      // Pied de page avec pagination
-      const pageCount = doc.internal.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.text(`Page ${i} sur ${pageCount}`, pageWidth / 2, doc.internal.pageSize.height - 10, null, null, "center");
-      }
+      doc.text(`Exercices retenus : ${formData.exercicesRetenus}`, 10, 90);
+      doc.text(`Date de clôture de l'exercice : ${calculateClotureDate(formData.dateClotureExercice)}`, 10, 100);
+      doc.text(`Fait à : ${formData.lieu}`, 10, 110);
+      doc.text(`Le : ${todayDate}`, 10, 120);
 
       doc.save('Accord_Interessement.pdf');
     } catch (error) {
@@ -106,39 +85,100 @@ export default function AccordForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="nomEntreprise">Nom de l'entreprise</Label>
-        <Input id="nomEntreprise" name="nomEntreprise" value={formData.nomEntreprise} onChange={handleChange} required />
+        <Input
+          id="nomEntreprise"
+          name="nomEntreprise"
+          value={formData.nomEntreprise}
+          onChange={handleChange}
+          placeholder="Finopia SAS"
+          required
+          className="h-8"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="adresse">Adresse complète</Label>
-        <Input id="adresse" name="adresse" value={formData.adresse} onChange={handleChange} required />
+        <Input
+          id="adresse"
+          name="adresse"
+          value={formData.adresse}
+          onChange={handleChange}
+          placeholder="12 rue des exemples, 75000 Paris"
+          required
+          className="h-8"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="siret">Numéro SIRET</Label>
-        <Input id="siret" name="siret" value={formData.siret} onChange={handleChange} required />
+        <Input
+          id="siret"
+          name="siret"
+          value={formData.siret}
+          onChange={handleChange}
+          placeholder="12345678900000"
+          required
+          className="h-8"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="idcc">Code IDCC de la convention collective applicable</Label>
-        <Input id="idcc" name="idcc" value={formData.idcc} onChange={handleChange} required />
+        <Input
+          id="idcc"
+          name="idcc"
+          value={formData.idcc}
+          onChange={handleChange}
+          placeholder="1234"
+          required
+          className="h-8"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="nombreSalaries">Nombre de salariés</Label>
-        <Input id="nombreSalaries" name="nombreSalaries" type="number" value={formData.nombreSalaries} onChange={handleChange} required />
+        <Input
+          id="nombreSalaries"
+          name="nombreSalaries"
+          type="number"
+          value={formData.nombreSalaries}
+          onChange={handleChange}
+          placeholder="50"
+          required
+          className="h-8"
+        />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="periodeApplication">Période d'application de l'accord</Label>
-        <Input id="periodeApplication" name="periodeApplication" value={formData.periodeApplication} onChange={handleChange} required />
+        <Label htmlFor="exercicesRetenus">Exercices retenus</Label>
+        <Input
+          id="exercicesRetenus"
+          name="exercicesRetenus"
+          value={formData.exercicesRetenus}
+          onChange={handleChange}
+          placeholder="16/06/2023 – 15/06/2024"
+          required
+          className="h-8"
+        />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="dateLimiteVersement">Date limite de versement de la prime</Label>
-        <Input id="dateLimiteVersement" name="dateLimiteVersement" type="date" value={formData.dateLimiteVersement} onChange={handleChange} required />
+        <Label htmlFor="dateClotureExercice">Date de clôture de l'exercice</Label>
+        <Input
+          id="dateClotureExercice"
+          name="dateClotureExercice"
+          type="date"
+          value={formData.dateClotureExercice}
+          onChange={handleChange}
+          required
+          className="h-8"
+        />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="lieuDateSignature">Lieu et date de signature</Label>
-        <Input id="lieuDateSignature" name="lieuDateSignature" value={formData.lieuDateSignature} onChange={handleChange} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="nomQualiteSignataire">Nom et qualité du signataire</Label>
-        <Input id="nomQualiteSignataire" name="nomQualiteSignataire" value={formData.nomQualiteSignataire} onChange={handleChange} required />
+        <Label htmlFor="lieu">Fait à :</Label>
+        <Input
+          id="lieu"
+          name="lieu"
+          value={formData.lieu}
+          onChange={handleChange}
+          placeholder="Paris"
+          required
+          className="h-8"
+        />
       </div>
       <Button type="submit" className="w-full">
         GÉNÉRER

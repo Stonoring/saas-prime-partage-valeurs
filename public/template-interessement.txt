@@ -113,7 +113,8 @@ Article 11 : Reconduction de la décision
 
 Le régime d'intéressement sera renouvelé par tacite reconduction pour une durée égale à la durée initiale. Le renouvellement par tacite reconduction peut intervenir plusieurs fois.
 
-Fait à {{lieuDateSignature}}
+Fait à {{lieu}}
+Le {{Date}}
 
 Pour l'entreprise {{nomEntreprise}}
 
