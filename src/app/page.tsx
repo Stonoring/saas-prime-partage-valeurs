@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
+import { Routes, Route } from "react-router-dom";
 
 // Import dynamique de BrowserRouter (désactivation du SSR)
 const Router = dynamic(() => import("react-router-dom").then((mod) => mod.BrowserRouter), { ssr: false });
 
+// Import des composants
 import CompagnyInformations from "@/components/app/CompagnyInformations";
 import LegalReminders from "@/components/app/LegalReminders";
 import FiscalAdvantages from "@/components/app/FiscalAdvantages";
@@ -14,12 +16,14 @@ import PpvProgress from "@/components/app/PpvProgress";
 import PpvDocumentation from "@/components/app/PpvDocumentation";
 import Chatbot from "@/components/app/Chatbot";
 import Timeline from "@/components/app/Timeline";
-import { Routes, Route } from "react-router-dom"; // Pas besoin de dynamic ici
+
+// Import des pages
 import SimulatorPage from "@/pages/ppv-simulator";
-import RedacDocuments from "@/pages/redac-documents"; // Import de la page redac-documents
+import RedacDocuments from "@/pages/redac-documents";
 
 export default function SaasInterface() {
-  const [companySize] = React.useState(11);
+  // États pour les informations d'entreprise
+  const [companySize] = React.useState<number>(11);
   const [fiscalYearStart, setFiscalYearStart] = React.useState<string>("Inconnue");
 
   return (
@@ -31,7 +35,7 @@ export default function SaasInterface() {
           element={
             <div className="min-h-screen bg-background">
               <main className="container mx-auto px-4 py-16 space-y-16 mt-16">
-                {/* Mes Informations Section */}
+                {/* Informations sur l'entreprise */}
                 <section className="mb-16">
                   <CompagnyInformations
                     companySize={companySize}
@@ -44,14 +48,14 @@ export default function SaasInterface() {
                   <Timeline fiscalYearStart={fiscalYearStart} />
                 </section>
 
-                {/* Section en trois colonnes */}
+                {/* Section des rappels légaux, avantages fiscaux et progression */}
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
                   <LegalReminders />
                   <FiscalAdvantages />
                   <PpvProgress />
                 </section>
 
-                {/* Actions principales et Documentation */}
+                {/* Documentation */}
                 <section className="mb-16">
                   <PpvDocumentation />
                 </section>
@@ -64,8 +68,10 @@ export default function SaasInterface() {
             </div>
           }
         />
+
         {/* Route pour le simulateur */}
         <Route path="/ppv-simulator" element={<SimulatorPage />} />
+
         {/* Route pour la rédaction des documents */}
         <Route path="/redac-documents" element={<RedacDocuments />} />
       </Routes>

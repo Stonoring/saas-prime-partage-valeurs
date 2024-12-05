@@ -16,6 +16,7 @@ export default function AccordForm() {
     exercicesRetenus: '',
     dateClotureExercice: '',
     lieu: '',
+    nomQualiteSignataire: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +30,7 @@ export default function AccordForm() {
   const calculateClotureDate = (date: string) => {
     const initialDate = new Date(date);
     initialDate.setMonth(initialDate.getMonth() + 5); // Ajoute 5 mois
-    return initialDate.toISOString().split('T')[0]; // Formate en yyyy-mm-dd
+    return initialDate.toISOString().split('T')[0];
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,41 +40,89 @@ export default function AccordForm() {
       const response = await fetch('/template-interessement.txt');
       const templateText = await response.text();
 
-      const todayDate = new Date().toLocaleDateString('fr-FR'); // Date du jour (format FR)
+      const todayDate = new Date().toLocaleDateString('fr-FR');
 
       const updatedFormData: Record<string, string> = {
         ...formData,
         Date: todayDate,
+        periodeApplication: formData.exercicesRetenus,
+        dateLimiteVersement: calculateClotureDate(formData.dateClotureExercice),
       };
 
+      // Remplacement des placeholders
       let filledTemplate = templateText;
-
       for (const key in updatedFormData) {
         const placeholder = `{{${key}}}`;
         const value = updatedFormData[key] || 'N/A';
-        filledTemplate = filledTemplate.split(placeholder).join(value);
+        filledTemplate = filledTemplate.replaceAll(placeholder, value);
       }
 
-      const doc = new jsPDF();
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+      });
 
-      // Ajout du contenu PDF
-      doc.setFont("Helvetica", "bold");
-      doc.setFontSize(16);
-      doc.text("Accord d'intéressement", 105, 15, null, null, "center");
+      // Définitions pour les marges et les dimensions de page
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const marginLeft = 20;
+      const marginRight = 20;
+      const marginTop = 20;
+      const marginBottom = 20;
+      const usablePageWidth = pageWidth - marginLeft - marginRight;
 
+      let currentHeight = marginTop;
+
+      // Fonction pour ajouter la pagination
+      const addPagination = () => {
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(10);
+          doc.text(
+            `Page ${i} sur ${pageCount}`,
+            pageWidth / 2,
+            pageHeight - 10,
+            { align: 'center' }
+          );
+        }
+      };
+
+      // Titre principal
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.text('Accord d\'intéressement', pageWidth / 2, currentHeight, { align: 'center' });
+
+      currentHeight += 15;
+
+      // Ajout du contenu de la template
+      doc.setFont('Helvetica', 'normal');
       doc.setFontSize(12);
-      doc.setFont("Helvetica", "bold");
-      doc.text("Informations Générales :", 10, 30);
-      doc.setFont("Helvetica", "normal");
-      doc.text(`Nom de l'entreprise : ${formData.nomEntreprise}`, 10, 40);
-      doc.text(`Adresse : ${formData.adresse}`, 10, 50);
-      doc.text(`SIRET : ${formData.siret}`, 10, 60);
-      doc.text(`IDCC : ${formData.idcc}`, 10, 70);
-      doc.text(`Nombre de salariés : ${formData.nombreSalaries}`, 10, 80);
-      doc.text(`Exercices retenus : ${formData.exercicesRetenus}`, 10, 90);
-      doc.text(`Date de clôture de l'exercice : ${calculateClotureDate(formData.dateClotureExercice)}`, 10, 100);
-      doc.text(`Fait à : ${formData.lieu}`, 10, 110);
-      doc.text(`Le : ${todayDate}`, 10, 120);
+      const lines = doc.splitTextToSize(filledTemplate, usablePageWidth);
+
+      const lineHeight = 7;
+
+      lines.forEach((line: string) => {
+        if (currentHeight + lineHeight > pageHeight - marginBottom) {
+          doc.addPage();
+          currentHeight = marginTop;
+        }
+        doc.text(line, marginLeft, currentHeight);
+        currentHeight += lineHeight;
+      });
+
+      currentHeight += 20;
+
+      // Signature
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Pour l\'entreprise :', marginLeft, currentHeight);
+      currentHeight += 10;
+      doc.text(`${formData.nomQualiteSignataire}`, marginLeft, currentHeight);
+
+      // Ajouter la pagination
+      addPagination();
 
       doc.save('Accord_Interessement.pdf');
     } catch (error) {
@@ -92,7 +141,6 @@ export default function AccordForm() {
           onChange={handleChange}
           placeholder="Finopia SAS"
           required
-          className="h-8"
         />
       </div>
       <div className="space-y-2">
@@ -104,7 +152,6 @@ export default function AccordForm() {
           onChange={handleChange}
           placeholder="12 rue des exemples, 75000 Paris"
           required
-          className="h-8"
         />
       </div>
       <div className="space-y-2">
@@ -114,9 +161,8 @@ export default function AccordForm() {
           name="siret"
           value={formData.siret}
           onChange={handleChange}
-          placeholder="12345678900000"
+          placeholder="123 456 789 00000"
           required
-          className="h-8"
         />
       </div>
       <div className="space-y-2">
@@ -128,7 +174,6 @@ export default function AccordForm() {
           onChange={handleChange}
           placeholder="1234"
           required
-          className="h-8"
         />
       </div>
       <div className="space-y-2">
@@ -141,7 +186,6 @@ export default function AccordForm() {
           onChange={handleChange}
           placeholder="50"
           required
-          className="h-8"
         />
       </div>
       <div className="space-y-2">
@@ -153,7 +197,6 @@ export default function AccordForm() {
           onChange={handleChange}
           placeholder="16/06/2023 – 15/06/2024"
           required
-          className="h-8"
         />
       </div>
       <div className="space-y-2">
@@ -165,7 +208,6 @@ export default function AccordForm() {
           value={formData.dateClotureExercice}
           onChange={handleChange}
           required
-          className="h-8"
         />
       </div>
       <div className="space-y-2">
@@ -177,7 +219,17 @@ export default function AccordForm() {
           onChange={handleChange}
           placeholder="Paris"
           required
-          className="h-8"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="nomQualiteSignataire">Nom et qualité du signataire</Label>
+        <Input
+          id="nomQualiteSignataire"
+          name="nomQualiteSignataire"
+          value={formData.nomQualiteSignataire}
+          onChange={handleChange}
+          placeholder="Directeur Général"
+          required
         />
       </div>
       <Button type="submit" className="w-full">

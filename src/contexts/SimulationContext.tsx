@@ -1,5 +1,6 @@
-// src/contexts/SimulationContext.tsx
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+'use client';
+
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface SimulationData {
   employees: number;
@@ -12,8 +13,8 @@ interface SimulationData {
     classification: number;
     workTime: number;
   };
-  selectedNeeds?: { id: string; label: string }[]; // Ajout de selectedNeeds
-  otherNeed?: string; // Ajout de otherNeed
+  selectedNeeds?: { id: string; label: string }[];
+  otherNeed?: string;
 }
 
 interface SimulationContextType {
@@ -32,8 +33,8 @@ const defaultSimulationData: SimulationData = {
     classification: 33,
     workTime: 34,
   },
-  selectedNeeds: [], // Initialisation de selectedNeeds
-  otherNeed: '', // Initialisation de otherNeed
+  selectedNeeds: [],
+  otherNeed: '',
 };
 
 const SimulationContext = createContext<SimulationContextType | undefined>(undefined);
@@ -47,7 +48,16 @@ export const useSimulation = () => {
 };
 
 export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [data, setData] = useState<SimulationData>(defaultSimulationData);
+  const [data, setData] = useState<SimulationData>(() => {
+    // Charger les données depuis localStorage
+    const storedData = localStorage.getItem('simulationData');
+    return storedData ? JSON.parse(storedData) : defaultSimulationData;
+  });
+
+  useEffect(() => {
+    // Sauvegarder les données dans localStorage à chaque modification
+    localStorage.setItem('simulationData', JSON.stringify(data));
+  }, [data]);
 
   const updateData = (newData: Partial<SimulationData>) => {
     setData((prevData) => ({ ...prevData, ...newData }));

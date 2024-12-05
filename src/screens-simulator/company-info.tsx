@@ -1,6 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/form/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -15,14 +22,29 @@ interface CompanyInfoProps {
 export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
   const { data, updateData } = useSimulation();
 
-  // Local state initialized from context
-  const [employees, setEmployees] = useState(data.employees.toString());
-  const [profits, setProfits] = useState(data.profits.toString());
+  // Charger les données initiales depuis localStorage ou utiliser les valeurs du contexte
+  const [employees, setEmployees] = useState(() => {
+    const storedEmployees = localStorage.getItem('employees');
+    return storedEmployees ? storedEmployees : data.employees.toString();
+  });
+
+  const [profits, setProfits] = useState(() => {
+    const storedProfits = localStorage.getItem('profits');
+    return storedProfits ? storedProfits : data.profits.toString();
+  });
+
   const [hasIncentive, setHasIncentive] = useState(data.hasIncentive ? 'yes' : 'no');
+
+  // Synchroniser les champs "Nombre de salariés" et "Bénéfices" avec localStorage
+  useEffect(() => {
+    localStorage.setItem('employees', employees);
+    localStorage.setItem('profits', profits);
+  }, [employees, profits]);
 
   // Derived state for validation
   const employeeNumber = parseInt(employees, 10) || 0;
-  const isProfitsValid = profits !== '' && parseInt(profits, 10) > 0;
+  const profitNumber = parseInt(profits, 10) || 0;
+  const isProfitsValid = profits !== '' && profitNumber > 0;
   const isObligatoryForEmployees = employeeNumber >= 11 && employeeNumber <= 49;
   const isValid = employees !== '' && isProfitsValid && hasIncentive !== null;
 
@@ -31,10 +53,11 @@ export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
     if (isValid) {
       const newData = {
         employees: employeeNumber,
-        profits: parseInt(profits, 10),
+        profits: profitNumber,
         hasIncentive: hasIncentive === 'yes',
       };
 
+      // Update context data only if changes are detected
       if (
         data.employees !== newData.employees ||
         data.profits !== newData.profits ||
@@ -45,7 +68,7 @@ export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
 
       onNext();
     }
-  }, [data, employeeNumber, profits, hasIncentive, updateData, onNext, isValid]);
+  }, [data, employeeNumber, profitNumber, hasIncentive, updateData, onNext, isValid]);
 
   return (
     <Card className="w-full">
@@ -77,7 +100,7 @@ export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
             )}
           </div>
 
-          {/* Bénéfices */}
+          {/* Moyenne des bénéfices */}
           <div className="space-y-2">
             <Label htmlFor="profits">Moyenne des bénéfices des 3 derniers exercices (en €)</Label>
             <div className="flex items-center space-x-2">

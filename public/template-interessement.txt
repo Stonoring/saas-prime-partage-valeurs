@@ -94,7 +94,7 @@ S'il n'existe pas de PEE ou de PEI au sein de l'entreprise et si un bénéficiai
 État récapitulatif aux salariés quittant l'entreprise :
 Inséré dans le livret d'épargne salariale, cet état récapitulatif présente l'ensemble des sommes et valeurs mobilières épargnées par le salarié au sein de l'entreprise et leur date de disponibilité. Il doit également informer le salarié sur le fait que les frais de tenue de compte-conservation sont pris en charge soit par l'entreprise, soit par l'épargnant, par prélèvement sur ses avoirs.
 
-Article 8 : Suivi de l'application de la décision
+Article 8 : Suivi de l'application de la décision/
 
 La « commission intéressement », créée à cet effet, sera informée chaque année des simulations effectuées sur les modalités de calcul et les critères de répartition de l'intéressement pour l'année complète. Elle se verra remettre tous les documents utiles à sa compréhension et pourra, le cas échéant, solliciter toute précision ou tout élément d'information qui lui semblerait nécessaire.
 

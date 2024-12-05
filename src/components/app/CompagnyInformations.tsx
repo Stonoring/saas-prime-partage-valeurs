@@ -1,41 +1,53 @@
-import React, { useState } from "react";
-import { Building, UserPlus, CalendarDays, Calendar, Zap, Clock, Edit } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Building, UserPlus, CalendarDays, Calendar, Zap, Edit } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { saveToLocalStorage, getFromLocalStorage } from "@/services/localStorageService";
 
-// Définition du type pour les données de l'entreprise
 interface CompanyData {
-  companySize: number | string;
-  name: string;
-  siret: string;
-  creationDate: string;
-  fiscalYearStart: string;
-  revenue: string;
-  years: string;
+  companySize: number | string; // Effectifs
+  name: string; // Nom de l'entreprise
+  siret: string; // SIRET
+  creationDate: string; // Date de création
+  fiscalYearStart: string; // Début exercice comptable
+  revenue: string; // Chiffre d'affaires
 }
 
 interface CompagnyInformationsProps {
   companySize?: number;
-  onFiscalYearStartChange?: (fiscalYearStart: string) => void; // Ajout de la prop facultative
+  onFiscalYearStartChange?: (fiscalYearStart: string) => void;
 }
 
-const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize = 0, onFiscalYearStartChange }) => {
-  const [siret, setSiret] = useState<string>(""); // Stocker le SIRET saisi par l'utilisateur
-  const [companyData, setCompanyData] = useState<CompanyData>({
-    companySize,
-    name: "Entreprise inconnue",
-    siret: "123 456 789 00001",
-    creationDate: "Inconnue",
-    fiscalYearStart: "Inconnue",
-    revenue: "Non renseigné",
-    years: "N/A",
+const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({
+  companySize = 0,
+  onFiscalYearStartChange,
+}) => {
+  const [siret, setSiret] = useState<string>(""); // Numéro de SIRET saisi
+  const [companyData, setCompanyData] = useState<CompanyData>(() => {
+    // Charger les données depuis localStorage au démarrage
+    const storedData = getFromLocalStorage("companyData");
+    return (
+      storedData || {
+        companySize,
+        name: "Entreprise inconnue",
+        siret: "123 456 789 00001",
+        creationDate: "Inconnue",
+        fiscalYearStart: "Inconnue",
+        revenue: "Non renseigné",
+      }
+    );
   });
-  const [loading, setLoading] = useState<boolean>(false); // Gérer l'indicateur de chargement
-  const [isEditingRevenue, setIsEditingRevenue] = useState<boolean>(false); // Gérer l'édition du chiffre d'affaires
-  const [isEditingSize, setIsEditingSize] = useState<boolean>(false); // Gérer l'édition des effectifs
-  const [newRevenue, setNewRevenue] = useState<string>(companyData.revenue); // Chiffre d'affaires à modifier
-  const [newSize, setNewSize] = useState<string>(companyData.companySize.toString()); // Effectif à modifier
 
-  // Fonction pour récupérer les données via le webhook Make
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isEditingRevenue, setIsEditingRevenue] = useState<boolean>(false);
+  const [isEditingSize, setIsEditingSize] = useState<boolean>(false);
+  const [newRevenue, setNewRevenue] = useState<string>(companyData.revenue);
+  const [newSize, setNewSize] = useState<string>(companyData.companySize.toString());
+
+  // Sauvegarder les données dans localStorage à chaque modification
+  useEffect(() => {
+    saveToLocalStorage("companyData", companyData);
+  }, [companyData]);
+
   const fetchCompanyData = async () => {
     setLoading(true);
     try {
@@ -55,10 +67,8 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
         creationDate: responseData.date_creation || "Inconnue",
         fiscalYearStart: responseData.debut_exercice_comptable || "Inconnue",
         revenue: responseData.chiffre_affaires || "Non renseigné",
-        years: `${responseData.annees_existence || "N/A"} ans`,
       });
 
-      // Passer la date de début d'exercice comptable au parent si la prop est définie
       if (onFiscalYearStartChange) {
         onFiscalYearStartChange(responseData.debut_exercice_comptable || "Inconnue");
       }
@@ -71,14 +81,25 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
   };
 
   const handleRevenueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewRevenue(event.target.value);
+    const value = event.target.value;
+    if (/^\d*\.?\d*$/.test(value)) {
+      setNewRevenue(value);
+    }
   };
 
   const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewSize(event.target.value);
+    const value = event.target.value;
+    if (/^\d*$/.test(value)) {
+      setNewSize(value);
+    }
   };
 
   const handleSaveRevenue = () => {
+    if (!newRevenue || isNaN(parseFloat(newRevenue))) {
+      alert("Veuillez entrer un chiffre d'affaires valide.");
+      return;
+    }
+
     setCompanyData((prevData: CompanyData) => ({
       ...prevData,
       revenue: newRevenue,
@@ -87,6 +108,11 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
   };
 
   const handleSaveSize = () => {
+    if (!newSize || isNaN(parseInt(newSize, 10))) {
+      alert("Veuillez entrer un nombre d'employés valide.");
+      return;
+    }
+
     setCompanyData((prevData: CompanyData) => ({
       ...prevData,
       companySize: parseInt(newSize, 10),
@@ -105,7 +131,7 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
   };
 
   const items = [
-    { icon: Building, title: "Entreprise", value: `${companyData.name}`, colorClass: "text-blue-500" },
+    { icon: Building, title: "Entreprise", value: companyData.name, colorClass: "text-blue-500" },
     {
       icon: UserPlus,
       title: "Effectif",
@@ -146,7 +172,6 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
       ),
       colorClass: "text-yellow-500",
     },
-    { icon: Clock, title: "Années d'existence", value: companyData.years, colorClass: "text-indigo-500" },
   ];
 
   return (
@@ -160,20 +185,23 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({ companySize
             type="text"
             placeholder="Entrez un numéro de SIRET"
             value={siret}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSiret(e.target.value)}
+            onChange={(e) => setSiret(e.target.value)}
             className="w-full p-2 border rounded"
           />
           <button
             onClick={fetchCompanyData}
             className={`mt-2 px-4 py-2 rounded ${loading || !siret ? "bg-gray-400 text-white cursor-not-allowed" : "bg-purple-600 text-white hover:bg-purple-700"}`}
-            disabled={loading || !siret} // Désactiver si en cours de chargement ou si SIRET vide
+            disabled={loading || !siret}
           >
             {loading ? "Chargement..." : "Rechercher"}
           </button>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {items.map((item, index) => (
-            <div key={index} className="flex items-center space-x-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm h-full">
+            <div
+              key={index}
+              className="flex items-center space-x-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm h-full"
+            >
               {React.createElement(item.icon, { className: `h-10 w-10 ${item.colorClass} flex-shrink-0` })}
               <div>
                 <h3 className="font-medium text-gray-900 dark:text-gray-100">{item.title}</h3>

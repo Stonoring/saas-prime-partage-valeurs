@@ -8,26 +8,27 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node", // Utilisation de "node" pour la compatibilité avec les alias
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "baseUrl": ".", // Définir la racine du projet
+    "paths": {
+      "@/*": ["./src/*"] // Alias @ pour la racine "src"
+    },
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    ]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/types/**/*"    // Inclusion des types personnalisés
+    "src/types/**/*" // Types personnalisés
   ],
   "exclude": [
     "node_modules"
