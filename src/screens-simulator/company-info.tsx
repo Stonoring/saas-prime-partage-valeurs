@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,33 +24,38 @@ interface CompanyInfoProps {
 export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
   const { data, updateData } = useSimulation();
 
-  // Charger les données initiales depuis localStorage ou utiliser les valeurs du contexte
-  const [employees, setEmployees] = useState(() => {
-    const storedEmployees = localStorage.getItem('employees');
-    return storedEmployees ? storedEmployees : data.employees.toString();
-  });
+  const [employees, setEmployees] = useState<string>(data.employees?.toString() || '');
+  const [profits, setProfits] = useState<string>(data.profits?.toString() || '');
+  const [hasIncentive, setHasIncentive] = useState<string>(data.hasIncentive ? 'yes' : 'no');
 
-  const [profits, setProfits] = useState(() => {
-    const storedProfits = localStorage.getItem('profits');
-    return storedProfits ? storedProfits : data.profits.toString();
-  });
-
-  const [hasIncentive, setHasIncentive] = useState(data.hasIncentive ? 'yes' : 'no');
-
-  // Synchroniser les champs "Nombre de salariés" et "Bénéfices" avec localStorage
+  // Charger les données depuis localStorage côté client
   useEffect(() => {
-    localStorage.setItem('employees', employees);
-    localStorage.setItem('profits', profits);
-  }, [employees, profits]);
+    if (typeof window !== 'undefined') {
+      const storedEmployees = localStorage.getItem('employees');
+      const storedProfits = localStorage.getItem('profits');
+      const storedHasIncentive = localStorage.getItem('hasIncentive');
 
-  // Derived state for validation
+      if (storedEmployees !== null) setEmployees(storedEmployees);
+      if (storedProfits !== null) setProfits(storedProfits);
+      if (storedHasIncentive !== null) setHasIncentive(storedHasIncentive);
+    }
+  }, []);
+
+  // Synchroniser les champs avec localStorage côté client
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('employees', employees);
+      localStorage.setItem('profits', profits);
+      localStorage.setItem('hasIncentive', hasIncentive);
+    }
+  }, [employees, profits, hasIncentive]);
+
   const employeeNumber = parseInt(employees, 10) || 0;
   const profitNumber = parseInt(profits, 10) || 0;
   const isProfitsValid = profits !== '' && profitNumber > 0;
   const isObligatoryForEmployees = employeeNumber >= 11 && employeeNumber <= 49;
   const isValid = employees !== '' && isProfitsValid && hasIncentive !== null;
 
-  // Handle "Suivant" click
   const handleNext = useCallback(() => {
     if (isValid) {
       const newData = {
@@ -57,7 +64,6 @@ export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
         hasIncentive: hasIncentive === 'yes',
       };
 
-      // Update context data only if changes are detected
       if (
         data.employees !== newData.employees ||
         data.profits !== newData.profits ||
@@ -80,7 +86,6 @@ export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Nombre de salariés */}
           <div className="space-y-2">
             <Label htmlFor="employees">Nombre de salariés</Label>
             <div className="flex items-center space-x-2">
@@ -100,7 +105,6 @@ export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
             )}
           </div>
 
-          {/* Moyenne des bénéfices */}
           <div className="space-y-2">
             <Label htmlFor="profits">Moyenne des bénéfices des 3 derniers exercices (en €)</Label>
             <div className="flex items-center space-x-2">
@@ -120,9 +124,8 @@ export function CompanyInfo({ onNext, onPrev }: CompanyInfoProps) {
             )}
           </div>
 
-          {/* Dispositif d'intéressement */}
           <div className="space-y-2">
-            <Label>Avez-vous déjà un dispositif d'intéressement ou de participation ?</Label>
+            <Label>Avez-vous déjà un dispositif d'intéressement ou de participation&nbsp;?</Label>
             <RadioGroup value={hasIncentive} onValueChange={setHasIncentive}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="yes" id="yes" />

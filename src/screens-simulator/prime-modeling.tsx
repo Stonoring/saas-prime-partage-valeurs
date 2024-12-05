@@ -35,7 +35,7 @@ interface Props {
 export function PrimeModeling({ onNext, onPrev }: Props) {
   const { data, updateData } = useSimulation();
 
-  // États locaux avec types explicitement définis
+  // États locaux
   const [totalAmount, setTotalAmount] = useState<number>(
     data.totalAmount || 3000 * data.employees
   );
@@ -50,6 +50,7 @@ export function PrimeModeling({ onNext, onPrev }: Props) {
   });
   const [error, setError] = useState<string | null>(null);
 
+  // Calculs
   const maxExemptAmount = data.hasIncentive
     ? 6000 * data.employees
     : 3000 * data.employees;
@@ -91,7 +92,7 @@ export function PrimeModeling({ onNext, onPrev }: Props) {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">
-          Comment souhaitez-vous répartir votre prime ?
+          Comment souhaitez-vous répartir votre prime&nbsp;?
         </CardTitle>
         <CardDescription>
           Personnalisez la répartition selon vos besoins.
@@ -193,7 +194,7 @@ export function PrimeModeling({ onNext, onPrev }: Props) {
             {selectedCriteria.length > 0 && (
               <div className="space-y-4">
                 <Label>
-                  Importance des critères (doit totaliser 100%)
+                  Importance des critères (doit totaliser 100&nbsp;%)
                 </Label>
                 {selectedCriteria.map((criteria) => (
                   <div key={criteria} className="space-y-2">

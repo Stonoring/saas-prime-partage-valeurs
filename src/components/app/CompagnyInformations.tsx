@@ -21,20 +21,29 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({
   companySize = 0,
   onFiscalYearStartChange,
 }) => {
-  const [siret, setSiret] = useState<string>(""); // Numéro de SIRET saisi
+  const [siret, setSiret] = useState<string>("");
   const [companyData, setCompanyData] = useState<CompanyData>(() => {
-    // Charger les données depuis localStorage au démarrage
-    const storedData = getFromLocalStorage("companyData");
-    return (
-      storedData || {
-        companySize,
-        name: "Entreprise inconnue",
-        siret: "123 456 789 00001",
-        creationDate: "Inconnue",
-        fiscalYearStart: "Inconnue",
-        revenue: "Non renseigné",
-      }
-    );
+    if (typeof window !== "undefined") {
+      const storedData = getFromLocalStorage("companyData");
+      return (
+        storedData || {
+          companySize,
+          name: "Entreprise inconnue",
+          siret: "123 456 789 00001",
+          creationDate: "Inconnue",
+          fiscalYearStart: "Inconnue",
+          revenue: "Non renseigné",
+        }
+      );
+    }
+    return {
+      companySize,
+      name: "Entreprise inconnue",
+      siret: "123 456 789 00001",
+      creationDate: "Inconnue",
+      fiscalYearStart: "Inconnue",
+      revenue: "Non renseigné",
+    };
   });
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -43,9 +52,10 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({
   const [newRevenue, setNewRevenue] = useState<string>(companyData.revenue);
   const [newSize, setNewSize] = useState<string>(companyData.companySize.toString());
 
-  // Sauvegarder les données dans localStorage à chaque modification
   useEffect(() => {
-    saveToLocalStorage("companyData", companyData);
+    if (typeof window !== "undefined") {
+      saveToLocalStorage("companyData", companyData);
+    }
   }, [companyData]);
 
   const fetchCompanyData = async () => {

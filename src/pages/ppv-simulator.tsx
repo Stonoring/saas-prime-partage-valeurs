@@ -1,6 +1,8 @@
-'use client'
+// ppv-simulator.tsx
 
-import { useState, useEffect } from 'react';
+'use client';
+
+import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Welcome } from '@/screens-simulator/welcome';
 import { Needs } from '@/screens-simulator/needs';
@@ -9,25 +11,11 @@ import { PrimeModeling } from '@/screens-simulator/prime-modeling';
 import { Impact } from '@/screens-simulator/impact';
 import { Summary } from '@/screens-simulator/summary';
 import { SimulationProvider } from '@/contexts/SimulationContext';
-import { saveToLocalStorage, getFromLocalStorage } from '@/services/localStorageService';
 
 const screens = [Welcome, Needs, CompanyInfo, PrimeModeling, Impact, Summary];
 
 export default function PPVSimulator() {
   const [currentScreen, setCurrentScreen] = useState<number>(0);
-
-  // Charger l'écran actuel depuis localStorage au montage
-  useEffect(() => {
-    const savedScreen = getFromLocalStorage('currentScreen');
-    if (savedScreen !== null && !isNaN(savedScreen)) {
-      setCurrentScreen(Number(savedScreen));
-    }
-  }, []);
-
-  // Sauvegarder l'écran actuel dans localStorage à chaque changement
-  useEffect(() => {
-    saveToLocalStorage('currentScreen', currentScreen);
-  }, [currentScreen]);
 
   const nextScreen = () => {
     if (currentScreen < screens.length - 1) {

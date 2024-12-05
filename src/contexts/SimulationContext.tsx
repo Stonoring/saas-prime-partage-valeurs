@@ -49,14 +49,19 @@ export const useSimulation = () => {
 
 export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [data, setData] = useState<SimulationData>(() => {
-    // Charger les données depuis localStorage
-    const storedData = localStorage.getItem('simulationData');
-    return storedData ? JSON.parse(storedData) : defaultSimulationData;
+    if (typeof window !== 'undefined') {
+      // Charger les données depuis localStorage
+      const storedData = localStorage.getItem('simulationData');
+      return storedData ? JSON.parse(storedData) : defaultSimulationData;
+    }
+    return defaultSimulationData;
   });
 
   useEffect(() => {
-    // Sauvegarder les données dans localStorage à chaque modification
-    localStorage.setItem('simulationData', JSON.stringify(data));
+    if (typeof window !== 'undefined') {
+      // Sauvegarder les données dans localStorage à chaque modification
+      localStorage.setItem('simulationData', JSON.stringify(data));
+    }
   }, [data]);
 
   const updateData = (newData: Partial<SimulationData>) => {
