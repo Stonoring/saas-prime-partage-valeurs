@@ -161,17 +161,6 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({
       ),
       colorClass: "text-green-500",
     },
-    { icon: CalendarDays, title: "Date de création", value: companyData.creationDate, colorClass: "text-gray-500" },
-    {
-      icon: Calendar,
-      title: "Ancienneté",
-      value:
-        companyData.creationDate !== "Inconnue"
-          ? `${new Date().getFullYear() - new Date(companyData.creationDate).getFullYear()} ans`
-          : "Inconnue",
-      colorClass: "text-indigo-500",
-    },
-    { icon: Calendar, title: "Début exercice comptable", value: companyData.fiscalYearStart, colorClass: "text-black" },
     {
       icon: Zap,
       title: "Chiffre d'affaires",
@@ -191,6 +180,17 @@ const CompagnyInformations: React.FC<CompagnyInformationsProps> = ({
       ),
       colorClass: "text-yellow-500",
     },
+    { icon: CalendarDays, title: "Date de création", value: companyData.creationDate, colorClass: "text-gray-500" },
+    {
+      icon: Calendar,
+      title: "Ancienneté",
+      value:
+        companyData.creationDate !== "Inconnue"
+          ? `${new Date().getFullYear() - new Date(companyData.creationDate).getFullYear()} ans`
+          : "Inconnue",
+      colorClass: "text-indigo-500",
+    },
+    { icon: Calendar, title: "Début exercice comptable", value: companyData.fiscalYearStart, colorClass: "text-black" },
   ];
 
   return (
