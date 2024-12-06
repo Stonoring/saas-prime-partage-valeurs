@@ -5,22 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSimulation } from '@/contexts/SimulationContext';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation'; // Utilisation de next/navigation pour la navigation moderne
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 export function Summary({ onPrev }: { onPrev: () => void }) {
   const { data } = useSimulation();
-  const router = useRouter();
+  const router = useRouter(); // Hook pour la navigation
 
   // Calculs
-  const montantTotal = data.totalAmount;
-  const nombreBeneficiaires = data.employees;
+  const montantTotal = data.totalAmount || 0;
+  const nombreBeneficiaires = data.employees || 1;
   const primeParEmploye = montantTotal / nombreBeneficiaires;
-  const coutTotal = primeParEmploye > 3000 && !data.hasIncentive
-    ? montantTotal * 1.2 // 20% de charges supplémentaires
-    : montantTotal;
-  const recommendedMethod = primeParEmploye > 3000 ? "PPV avec intéressement" : "PPV classique";
+  const coutTotal =
+    primeParEmploye > 3000 && !data.hasIncentive ? montantTotal * 1.2 : montantTotal;
+  const recommendedMethod = primeParEmploye > 3000 ? 'PPV avec intéressement' : 'PPV classique';
 
   // Critères de répartition pondérée
   const weightedCriteria = React.useMemo(() => {
@@ -68,7 +67,26 @@ export function Summary({ onPrev }: { onPrev: () => void }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* Vos lignes de tableau ici */}
+              <TableRow>
+                <TableCell>Montant total</TableCell>
+                <TableCell>{montantTotal.toFixed(2)} €</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Nombre de bénéficiaires</TableCell>
+                <TableCell>{nombreBeneficiaires}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Prime par employé</TableCell>
+                <TableCell>{primeParEmploye.toFixed(2)} €</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Coût total</TableCell>
+                <TableCell>{coutTotal.toFixed(2)} €</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Méthode recommandée</TableCell>
+                <TableCell>{recommendedMethod}</TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </CardContent>
@@ -80,7 +98,7 @@ export function Summary({ onPrev }: { onPrev: () => void }) {
         </Button>
         <Button onClick={downloadPDF}>Télécharger le rapport</Button>
         <Button onClick={() => router.push('/ppv-simulator')}>Recommencer</Button>
-        <Button onClick={() => router.push('/')}>Retourner à l'écran d'accueil</Button>
+        <Button onClick={() => router.push('/')}>Retourner à l&apos;accueil</Button>
       </CardFooter>
     </div>
   );
